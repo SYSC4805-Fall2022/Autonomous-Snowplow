@@ -40,13 +40,42 @@
 #define ultrasonic_trig 2
 #define ultrasonic_echo A7
 
+// WDT
+#define WDT_KEY (0xA5)
 
-void setup() {
-  // put your setup code here, to run once:
 
+void watchdogSetup(void) {
+  /*** watchdogDisable (); ***/
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void WDT_Handler(void)
+{
+  /* Clear status bit to acknowledge interrupt by dummy read. */
+  WDT->WDT_SR; // Clear status register
+
+  printf("help! in WDT\n");
+}
+
+void setup() {
+
+  // Enable watchdog.
+  WDT->WDT_MR = WDT_MR_WDD(0xFFF) |
+                WDT_MR_WDFIEN |  //  Triggers an interrupt or WDT_MR_WDRSTEN to trigger a Reset
+                WDT_MR_WDV(256 * 5); // Watchdog triggers a reset or an interrupt after 5 seconds if underflow
+  // 2 seconds equal 84000000 * 5 = 420000000 clock cycles
+  /* Slow clock is running at 32.768 kHz
+    watchdog frequency is therefore 32768 / 128 = 256 Hz
+    WDV holds the period in 256th of seconds  */
+  NVIC_EnableIRQ(WDT_IRQn);
+
+  Serial.begin(115200);
+}
+
+void loop()
+{
+
+  //Restart watchdog
+  WDT->WDT_CR = WDT_CR_KEY(WDT_KEY)
+                | WDT_CR_WDRSTT;
 
 }
