@@ -68,11 +68,18 @@ void watchdogSetup(void) {
 
 void WDT_Handler(void)
 {
-  if (phase)
-  /* Clear status bit to acknowledge interrupt by dummy read. */
-  WDT->WDT_SR; // Clear status register
-
-  printf("help! in WDT\n");
+  if (phase == 1){
+    phase = 2;
+    line_following = false;
+    //Restart watchdog
+    WDT->WDT_CR = WDT_CR_KEY(WDT_KEY)
+                  | WDT_CR_WDRSTT;
+  } else {
+    /* Clear status bit to acknowledge interrupt by dummy read. */
+    WDT->WDT_SR; // Clear status register
+    enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+    printf("help! in WDT\n");
+  }
 }
 
 void state_forward_handler(){
@@ -116,7 +123,7 @@ void state_turn_right_handler(){
   right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   
-  delay(500);
+  delay(250);
 
   enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   delay(100);
@@ -172,7 +179,7 @@ void state_inch_forward_handler(){
 
 void state_random_turn_right_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  bool front_object_detected = object_detection_ultrasonic(EZDist, short_object_detection_threshold);
+  bool front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
   bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
   bool turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
 
