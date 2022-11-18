@@ -3,11 +3,12 @@
 #include "line_follower.h"
 #include "ultrasonic_sensor.h"
 #include "motor_control.h"
+#include <Arduino.h>
 
 // Front Line Follower Sensor Pin Out
 #define FLFS_R_pin 23
 #define FLFS_M_pin 25
-#define FLSF_L_pin 27
+#define FLFS_L_pin 27
 
 // Back Line Follower Sensor Pin Out
 #define BLFS_R_pin 43
@@ -16,16 +17,16 @@
 
 // Stepper Motors Pin Out
 //Back Left
-#define BL_Wheel_Enable 47
+#define BL_Wheel_Enable 11 // 47
 #define BL_Wheel_Direction 3
 //Back Right
-#define BR_Wheel_Enable 51
+#define BR_Wheel_Enable 9 // 51
 #define BR_Wheel_Direction 5
 //Front Left
-#define FL_Wheel_Enable 49
+#define FL_Wheel_Enable 10 // 49
 #define FL_Wheel_Direction 4
 //Front Right
-#define FR_Wheel_Enable 53
+#define FR_Wheel_Enable 8 // 53
 #define FR_Wheel_Direction 6
 
 // Front Right IR Sensor
@@ -43,6 +44,15 @@
 // WDT
 #define WDT_KEY (0xA5)
 
+// States
+const int state_forward = 0;
+const int state_turn_right = 1;
+const int state_backup = 2;
+const int state_inch_forward = 3;
+const int state_random_turn_right = 4;
+volatile int state = state_forward;
+volatile bool line_following = true;
+volatile int right_turns = 0;
 
 void watchdogSetup(void) {
   /*** watchdogDisable (); ***/
@@ -54,6 +64,71 @@ void WDT_Handler(void)
   WDT->WDT_SR; // Clear status register
 
   printf("help! in WDT\n");
+}
+
+void state_forward_handler(){
+  bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
+  bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
+
+  if(line_following){
+    int direction = steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
+    // Straight = 1, left = 0, right = 2, corner = 3
+    switch (direction){
+      case 1:
+        forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+        enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+        break;
+      case 0:
+        forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+        enable_left_turn(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+        break;
+      case 2:
+        forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+        enable_right_turn(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+        break;
+      case 3:
+        enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+        if (steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin) == 3){
+          state = state_turn_right;
+        }
+        break;
+    }
+  }else if(front_line_detected) {
+    enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+    state = state_backup;
+  }else{
+    forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+    enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);   
+  }
+}
+
+void state_turn_right_handler(){
+  right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+  enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  
+  delay(500);
+
+  enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  delay(100);
+  forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+  enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  right_turns += 1;
+  if (right_turns == 5){
+    line_following = False;
+  }
+  state = state_forward;
+}
+
+void state_backup_handler(){
+  return;
+}
+
+void state_inch_forward_handler(){
+  return;
+}
+
+void state_random_turn_right_handler(){
+  return;
 }
 
 void setup() {
@@ -68,7 +143,44 @@ void setup() {
     WDV holds the period in 256th of seconds  */
   NVIC_EnableIRQ(WDT_IRQn);
 
+  // Front Line Follower Sensor Pin Out
+  pinMode(FLFS_R_pin, INPUT);
+  pinMode(FLFS_M_pin, INPUT);
+  pinMode(FLFS_L_pin, INPUT);
+
+  // Back Line Follower Sensor Pin Out
+  pinMode(BLFS_R_pin, INPUT);
+  pinMode(BLFS_M_pin, INPUT);
+  pinMode(BLFS_L_pin, INPUT);
+
+  // Stepper Motors Pin Out
+  //Back Left
+  pinMode(BL_Wheel_Enable, OUTPUT);
+  pinMode(BL_Wheel_Direction, OUTPUT);
+  //Back Right
+  pinMode(BR_Wheel_Enable, OUTPUT);
+  pinMode(BR_Wheel_Direction, OUTPUT);
+  //Front Left
+  pinMode(FL_Wheel_Enable, OUTPUT);
+  pinMode(FL_Wheel_Direction, OUTPUT);
+  //Front Right
+  pinMode(FR_Wheel_Enable, OUTPUT);
+  pinMode(FR_Wheel_Direction, OUTPUT);
+
+  // Front Right IR Sensor
+  pinMode(FR_Turn_Sensor, INPUT);
+  // Back Left IR Sensor
+  pinMode(BL_Turn_sensor, INPUT);
+
+  // Back GP2 Distance Sensor
+  pinMode(GP2_Sensor, INPUT);
+
+  // Ultrasonic Sensor
+  pinMode(ultrasonic_trig, OUTPUT);
+  pinMode(ultrasonic_echo, INPUT);
+
   Serial.begin(115200);
+
 }
 
 void loop()
@@ -78,4 +190,21 @@ void loop()
   WDT->WDT_CR = WDT_CR_KEY(WDT_KEY)
                 | WDT_CR_WDRSTT;
 
+  switch (state) {
+    case state_forward:
+      state_forward_handler();
+      break;
+    case state_turn_right:
+      state_turn_right_handler();
+      break;
+    case state_backup:
+      state_backup_handler();
+      break;
+    case state_inch_forward:
+      state_inch_forward_handler();
+      break;
+    case state_random_turn_right:
+      state_random_turn_right_handler();
+      break;
+  }
 }
