@@ -1,5 +1,3 @@
-#include "distance_gp2.h"
-#include "ir_sensor.h"
 #include "line_follower.h"
 #include "ultrasonic_sensor.h"
 #include "motor_control.h"
@@ -40,6 +38,7 @@
 // Ultrasonic Sensor
 #define ultrasonic_trig 2
 #define ultrasonic_echo A7
+EZDist EZDist(ultrasonic_trig, ultrasonic_echo);
 
 // WDT
 #define WDT_KEY (0xA5)
@@ -114,12 +113,13 @@ void state_turn_right_handler(){
   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   right_turns += 1;
   if (right_turns == 5){
-    line_following = False;
+    line_following = false;
   }
   state = state_forward;
 }
 
 void state_backup_handler(){
+  bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
   return;
 }
 

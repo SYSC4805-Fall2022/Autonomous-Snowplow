@@ -39,7 +39,7 @@ bool back_detection(int BLFS_R_pin, int BLFS_M_pin, int BLFS_L_pin){ // Check ba
 }
 
 bool front_detection(int FLFS_R_pin, int FLFS_M_pin, int FLFS_L_pin){ // Check front sensor
-  bool LFS_R = digitalRead(FLFS_R_pin); bool val for front line follower sensor (right)
+  bool LFS_R = digitalRead(FLFS_R_pin); // bool val for front line follower sensor (right)
   bool LFS_M = digitalRead(FLFS_M_pin); // bool val for front line follower sensor (middle)
   bool LFS_L = digitalRead(FLFS_L_pin); // bool val for front line follower sensor (left)
 
