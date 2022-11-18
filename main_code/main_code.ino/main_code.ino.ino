@@ -51,6 +51,9 @@ const int state_turn_right = 1;
 const int state_backup = 2;
 const int state_inch_forward = 3;
 const int state_random_turn_right = 4;
+
+const int main_object_detection_threshold = 10;
+
 volatile int state = state_forward;
 volatile bool line_following = true;
 volatile int right_turns = 0;
@@ -69,7 +72,7 @@ void WDT_Handler(void)
 
 void state_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
+  bool front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
 
   if(line_following){
     int direction = steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
@@ -94,7 +97,7 @@ void state_forward_handler(){
         }
         break;
     }
-  }else if(front_line_detected) {
+  }else if(front_line_detected || front_object_detected) {
     enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
     state = state_backup;
   }else{
@@ -122,6 +125,26 @@ void state_turn_right_handler(){
 
 void state_backup_handler(){
   bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
+  bool back_object_detected = object_detection_gp2(GP2_Sensor, main_object_detection_threshold);
+  
+  enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  backward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+      
+  for (int i = 0; i < 10; i++){
+    if (back_line_detected || back_object_detected){
+      enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+      state = state_inch_forward;
+      break;
+    } else {
+      enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+      
+      delay(100);
+    }
+
+    if (i == 9){
+      state = state_random_turn_right;
+    }
+  }
   return;
 }
 
