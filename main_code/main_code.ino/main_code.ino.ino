@@ -1,3 +1,5 @@
+#include "distance_gp2.h"
+#include "ir_sensor.h"
 #include "line_follower.h"
 #include "ultrasonic_sensor.h"
 #include "motor_control.h"
