@@ -32,7 +32,7 @@
 // Front Right IR Sensor
 #define FR_Turn_Sensor 36
 // Back Left IR Sensor
-#define BL_Turn_sensor 34
+#define BL_Turn_Sensor 34
 
 // Back GP2 Distance Sensor
 #define GP2_Sensor A0
@@ -44,6 +44,7 @@ EZDist EZDist(ultrasonic_trig, ultrasonic_echo);
 
 // WDT
 #define WDT_KEY (0xA5)
+volatile int phase = 1;
 
 // States
 const int state_forward = 0;
@@ -67,6 +68,7 @@ void watchdogSetup(void) {
 
 void WDT_Handler(void)
 {
+  if (phase)
   /* Clear status bit to acknowledge interrupt by dummy read. */
   WDT->WDT_SR; // Clear status register
 
@@ -169,7 +171,38 @@ void state_inch_forward_handler(){
 }
 
 void state_random_turn_right_handler(){
-  return;
+  bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
+  bool front_object_detected = object_detection_ultrasonic(EZDist, short_object_detection_threshold);
+  bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
+  bool turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
+
+  if (turn_fr_sensor || turn_bl_sensor){
+    if (front_object_detected || front_detection) {
+      state = state_backup;
+    } else {
+      state = state_forward;
+    }
+    
+  } else {
+    int random_turn_time = random(10, 50);
+    for (int i = 0; i < 5; i++){
+      right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+      enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+
+      delay(random_turn_time);
+
+      enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+      if (turn_fr_sensor || turn_bl_sensor){
+        if (front_object_detected || front_detection) {
+          state = state_backup;
+        } else {
+          state = state_forward;
+        }
+        break;
+      }
+      state = state_forward;
+    }
+  }
 }
 
 void setup() {
@@ -211,7 +244,7 @@ void setup() {
   // Front Right IR Sensor
   pinMode(FR_Turn_Sensor, INPUT);
   // Back Left IR Sensor
-  pinMode(BL_Turn_sensor, INPUT);
+  pinMode(BL_Turn_Sensor, INPUT);
 
   // Back GP2 Distance Sensor
   pinMode(GP2_Sensor, INPUT);
