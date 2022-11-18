@@ -53,10 +53,13 @@ const int state_inch_forward = 3;
 const int state_random_turn_right = 4;
 
 const int main_object_detection_threshold = 10;
+const int short_object_detection_threshold = 5;
+const int max_stuck_counter = 5;
 
 volatile int state = state_forward;
 volatile bool line_following = true;
 volatile int right_turns = 0;
+volatile int stuck_counter = 0;
 
 void watchdogSetup(void) {
   /*** watchdogDisable (); ***/
@@ -73,6 +76,7 @@ void WDT_Handler(void)
 void state_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
   bool front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
+  stuck_counter = 0;
 
   if(line_following){
     int direction = steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
@@ -124,20 +128,19 @@ void state_turn_right_handler(){
 }
 
 void state_backup_handler(){
-  bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
-  bool back_object_detected = object_detection_gp2(GP2_Sensor, main_object_detection_threshold);
-  
   enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   backward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
       
   for (int i = 0; i < 10; i++){
+    bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
+    bool back_object_detected = object_detection_gp2(GP2_Sensor, main_object_detection_threshold);
+  
     if (back_line_detected || back_object_detected){
       enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
       state = state_inch_forward;
       break;
     } else {
       enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
-      
       delay(100);
     }
 
@@ -145,11 +148,24 @@ void state_backup_handler(){
       state = state_random_turn_right;
     }
   }
-  return;
 }
 
 void state_inch_forward_handler(){
-  return;
+  bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
+  bool front_object_detected = object_detection_ultrasonic(EZDist, short_object_detection_threshold);
+  
+  if(!front_line_detected || !front_object_detected){
+    forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+    enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+    delay(100);
+    enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+    state = state_random_turn_right;
+  } else if(stuck_counter == max_stuck_counter){
+    state = state_random_turn_right; // We are stuck, we should try to get out
+  } else {
+    state = state_backup;
+    stuck_counter += 1;
+  }
 }
 
 void state_random_turn_right_handler(){
