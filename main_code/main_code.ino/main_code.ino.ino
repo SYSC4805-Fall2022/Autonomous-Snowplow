@@ -184,8 +184,8 @@ void state_random_turn_right_handler(){
   bool turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
 
   if (turn_fr_sensor || turn_bl_sensor){
-    if (front_object_detected || front_detection) {
-      state = state_backup;
+    if (front_object_detected || front_line_detected) {
+      state = state_backup;s
     } else {
       state = state_forward;
     }
@@ -199,6 +199,12 @@ void state_random_turn_right_handler(){
       delay(random_turn_time);
 
       enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+
+      front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
+      front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
+      turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
+      turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
+
       if (turn_fr_sensor || turn_bl_sensor){
         if (front_object_detected || front_detection) {
           state = state_backup;
