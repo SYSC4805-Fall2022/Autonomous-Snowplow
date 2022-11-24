@@ -186,6 +186,7 @@ void state_inch_forward_handler(){
 void state_random_turn_right_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
   bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
+  bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
   bool turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
 
   if (turn_fr_sensor || turn_bl_sensor){
@@ -207,6 +208,7 @@ void state_random_turn_right_handler(){
 
       front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
       front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
+      turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
       turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
 
       if (turn_fr_sensor || turn_bl_sensor){
