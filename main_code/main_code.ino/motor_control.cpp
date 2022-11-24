@@ -34,10 +34,11 @@ void enable_on(int BL_Enable, int BR_Enable, int FL_Enable, int FR_Enable){
   // digitalWrite(FL_Enable, HIGH);
   // digitalWrite(BR_Enable, HIGH);
   // digitalWrite(FR_Enable, HIGH);
-  analogWrite(BL_Enable, 200);
-  analogWrite(FL_Enable, 200);
-  analogWrite(BR_Enable, 200);
-  analogWrite(FR_Enable, 200);
+  // 153 = 60% of 255: The amount of duty required to produce a speed of 30 cm/s at 1 khz frequency.
+  analogWrite(BL_Enable, 153); 
+  analogWrite(FL_Enable, 153);
+  analogWrite(BR_Enable, 153);
+  analogWrite(FR_Enable, 153);
 }
 
 void enable_off(int BL_Enable, int BR_Enable, int FL_Enable, int FR_Enable){

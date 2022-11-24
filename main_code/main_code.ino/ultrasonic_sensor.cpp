@@ -2,7 +2,7 @@
 
 int get_distance_cm(EZDist object){
   int dist = object.cm();
-  if (dist > 3){
+  if (dist > 5){
     return dist;
   }
   return 100;
