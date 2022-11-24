@@ -1,0 +1,20 @@
+#include "ultrasonic_sensor.h"
+
+int get_distance_cm(EZDist object){
+  return object.cm();
+}
+
+int get_average_distance_cm(EZDist object, int num_iterations){
+  int total = 0;
+  for(int i = 0; i < num_iterations; i++){
+    total += object.cm();
+  }
+  return total / num_iterations;
+}
+
+bool object_detection_ultrasonic(EZDist object, int threshold_distance_cm){
+  if (get_distance_cm(object) < threshold_distance_cm){
+    return true;
+  }
+  return false;
+}
