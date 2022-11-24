@@ -37,10 +37,16 @@
 // Back GP2 Distance Sensor
 #define GP2_Sensor A0
 
-// Ultrasonic Sensor
-#define ultrasonic_trig 2
-#define ultrasonic_echo A7
-EZDist EZDist(ultrasonic_trig, ultrasonic_echo);
+// Ultrasonic Sensor 1
+#define ultrasonic_trig1 2
+#define ultrasonic_echo1 A7
+// EZDist EZDist(ultrasonic_trig, ultrasonic_echo);
+
+// Ultrasonic Sensor 2
+#define ultrasonic_trig2 13
+#define ultrasonic_echo2 A6
+EZDist ezdist1 = EZDist(ultrasonic_trig1, ultrasonic_echo1);
+EZDist ezdist2 = EZDist(ultrasonic_trig2, ultrasonic_echo2);
 
 // WDT
 #define WDT_KEY (0xA5)
@@ -84,7 +90,7 @@ void WDT_Handler(void)
 
 void state_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  bool front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
+  bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
   stuck_counter = 0;
 
   if(line_following){
@@ -161,8 +167,8 @@ void state_backup_handler(){
 
 void state_inch_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  bool front_object_detected = object_detection_ultrasonic(EZDist, short_object_detection_threshold);
-  
+  bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
+
   if(!front_line_detected || !front_object_detected){
     forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
     enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
@@ -179,13 +185,12 @@ void state_inch_forward_handler(){
 
 void state_random_turn_right_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  bool front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
-  bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
+  bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
   bool turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
 
   if (turn_fr_sensor || turn_bl_sensor){
     if (front_object_detected || front_line_detected) {
-      state = state_backup;s
+      state = state_backup;
     } else {
       state = state_forward;
     }
@@ -201,8 +206,7 @@ void state_random_turn_right_handler(){
       enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
 
       front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-      front_object_detected = object_detection_ultrasonic(EZDist, main_object_detection_threshold);
-      turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
+      front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
       turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
 
       if (turn_fr_sensor || turn_bl_sensor){
@@ -263,8 +267,10 @@ void setup() {
   pinMode(GP2_Sensor, INPUT);
 
   // Ultrasonic Sensor
-  pinMode(ultrasonic_trig, OUTPUT);
-  pinMode(ultrasonic_echo, INPUT);
+  pinMode(ultrasonic_trig1, OUTPUT);
+  pinMode(ultrasonic_echo1, INPUT);
+  pinMode(ultrasonic_trig2, OUTPUT);
+  pinMode(ultrasonic_echo2, INPUT);
 
   Serial.begin(115200);
 
