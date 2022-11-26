@@ -96,9 +96,13 @@ void state_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
   // bool front_line_detected = false;
   // bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold) || object_detection_gp2(GP2_Sensor_F, main_object_detection_threshold);
-  bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
+  // bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
+  bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold);
+  bool front_object_detected2 = object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
+  // bool front_object_detected = false;
   stuck_counter = 0;
-  Serial.println(front_object_detected);
+  Serial.println("FRONT OBJECT: ");
+  Serial.println(front_object_detected || front_object_detected2);
 
   if(line_following){
     int direction = steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
@@ -123,7 +127,7 @@ void state_forward_handler(){
         }
         break;
     }
-  }else if(front_line_detected || front_object_detected) {
+  }else if(front_line_detected || front_object_detected || front_object_detected2) {
     enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
     state = state_backup;
   }else{
@@ -213,7 +217,7 @@ void state_random_turn_right_handler(){
   bool turn_fr_sensor = false;
   bool turn_bl_sensor = false;
 
-  int random_turn_time = random(100, 500);
+  int random_turn_time = random(500, 1000);
   for (int i = 0; i < 5; i++){
     Serial.println("Right Turn");
     right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
@@ -240,6 +244,7 @@ void state_random_turn_right_handler(){
     //   break;
     // }
     state = state_forward;
+    break;
   }
 }
 
