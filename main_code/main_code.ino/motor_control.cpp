@@ -1,6 +1,9 @@
+// Code will be used to control the wheels direction
+
 #include "motor_control.h"
 #include "Arduino.h"
 
+//Robot moves forward when the back-right and front-right is set to HIGH
 void forward(int BL_Direction, int BR_Direction, int FL_Direction, int FR_Direction){
   digitalWrite(BL_Direction, LOW);
   digitalWrite(FL_Direction, LOW);
@@ -8,13 +11,14 @@ void forward(int BL_Direction, int BR_Direction, int FL_Direction, int FR_Direct
   digitalWrite(FR_Direction, HIGH);
 }
 
+//Robot moves backwards when back-left and front-left are HIGH
 void backward(int BL_Direction, int BR_Direction, int FL_Direction, int FR_Direction){
   digitalWrite(BL_Direction, HIGH);
   digitalWrite(FL_Direction, HIGH);
   digitalWrite(BR_Direction, LOW);
   digitalWrite(FR_Direction, LOW);
 }
-
+//The robot turns left when all 4-wheels are HIGH
 void left(int BL_Direction, int BR_Direction, int FL_Direction, int FR_Direction){
   digitalWrite(BL_Direction, HIGH);
   digitalWrite(FL_Direction, HIGH);
@@ -22,6 +26,7 @@ void left(int BL_Direction, int BR_Direction, int FL_Direction, int FR_Direction
   digitalWrite(FR_Direction, HIGH);
 }
 
+//default setting of the robot=> turn right 
 void right(int BL_Direction, int BR_Direction, int FL_Direction, int FR_Direction){
   digitalWrite(BL_Direction, LOW);
   digitalWrite(FL_Direction, LOW);
