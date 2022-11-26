@@ -1,5 +1,5 @@
-# The Ultrasonic sensor is used to measures the distance between the the robot and a potential obstacle
-# The EZDist object zip file is used to get the distance in centimeters and uses this distance to find the average distance
+//The Ultrasonic sensor is used to measures the distance between the the robot and a potential obstacle
+//The EZDist object zip file is used to get the distance in centimeters and uses this distance to find the average distance
 
 
 #include "ultrasonic_sensor.h"
