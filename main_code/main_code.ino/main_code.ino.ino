@@ -1,5 +1,3 @@
-#include "distance_gp2.h"
-#include "ir_sensor.h"
 #include "line_follower.h"
 #include "ultrasonic_sensor.h"
 #include "motor_control.h"
@@ -9,11 +7,6 @@
 #define FLFS_R_pin 23
 #define FLFS_M_pin 25
 #define FLFS_L_pin 27
-
-// Back Line Follower Sensor Pin Out
-#define BLFS_R_pin 43
-#define BLFS_M_pin 41
-#define BLFS_L_pin 39
 
 // Stepper Motors Pin Out
 //Back Left
@@ -28,16 +21,6 @@
 //Front Right
 #define FR_Wheel_Enable 8 // 53
 #define FR_Wheel_Direction 6
-
-// Front Right IR Sensor
-#define FR_Turn_Sensor 36
-// Back Left IR Sensor
-#define BL_Turn_Sensor 34
-
-// Front GP2 Distance Sensor
-#define GP2_Sensor_F A1
-// Back GP2 Distance Sensor
-#define GP2_Sensor_B A0
 
 // Ultrasonic Sensor 1
 #define ultrasonic_trig1 2
@@ -265,11 +248,6 @@ void setup() {
   pinMode(FLFS_M_pin, INPUT);
   pinMode(FLFS_L_pin, INPUT);
 
-  // Back Line Follower Sensor Pin Out
-  pinMode(BLFS_R_pin, INPUT);
-  pinMode(BLFS_M_pin, INPUT);
-  pinMode(BLFS_L_pin, INPUT);
-
   // Stepper Motors Pin Out
   //Back Left
   pinMode(BL_Wheel_Enable, OUTPUT);
@@ -284,17 +262,7 @@ void setup() {
   pinMode(FR_Wheel_Enable, OUTPUT);
   pinMode(FR_Wheel_Direction, OUTPUT);
 
-  // Front Right IR Sensor
-  pinMode(FR_Turn_Sensor, INPUT);
-  // Back Left IR Sensor
-  pinMode(BL_Turn_Sensor, INPUT);
-
-  // Back GP2 Distance Sensor
-  pinMode(GP2_Sensor_B, INPUT);
-  // Front GP2 Distance Sensor
-  pinMode(GP2_Sensor_F, INPUT);
-
-  // Ultrasonic Sensor
+  // Ultrasonic Sensors
   pinMode(ultrasonic_trig1, OUTPUT);
   pinMode(ultrasonic_echo1, INPUT);
   pinMode(ultrasonic_trig2, OUTPUT);
