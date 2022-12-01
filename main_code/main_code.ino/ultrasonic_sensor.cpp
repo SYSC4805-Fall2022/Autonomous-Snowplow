@@ -4,11 +4,20 @@
 
 #include "ultrasonic_sensor.h"
 
+/*
+ * Returns the distance to the object detected in cm
+ */
 int get_distance_cm(EZDist object){
-  return object.cm();
+  int dist = object.cm();
+  if (dist > 5){
+    return dist;
+  }
+  return 100;
 }
 
-
+/*
+ * Returns the distance to the object detected in cm with debouncing
+ */
 int get_average_distance_cm(EZDist object, int num_iterations){
   int total = 0;
   for(int i = 0; i < num_iterations; i++){
@@ -17,11 +26,15 @@ int get_average_distance_cm(EZDist object, int num_iterations){
   return total / num_iterations;
 }
 
-//Returns True if object distance is less than the threhold distance
-//Detects an obstacle while the robot is moving within the taped-area
-
+/*
+ * Returns if object detected within a threshold distance
+ */
 bool object_detection_ultrasonic(EZDist object, int threshold_distance_cm){
-  if (get_distance_cm(object) < threshold_distance_cm){
+  //Returns True if object distance is less than the threhold distance
+  //Detects an obstacle while the robot is moving within the taped-area
+  int dist = get_distance_cm(object);
+  if (dist < threshold_distance_cm){
+    Serial.println(dist);
     return true;
   }
   return false;

@@ -1,6 +1,8 @@
 #include "line_follower.h"
 
-
+/*
+ * Determines the direction to steer to stay close to the line
+ */
 int steer_direction(int FLFS_R_pin, int FLFS_M_pin, int FLFS_L_pin) { 
   
   bool LFS_R = digitalRead(FLFS_R_pin); // bool val for front line follower sensor (right)
@@ -27,6 +29,9 @@ int steer_direction(int FLFS_R_pin, int FLFS_M_pin, int FLFS_L_pin) {
   return dir;
 }
 
+/*
+ * Determines if back sensor detected a line
+ */
 bool back_detection(int BLFS_R_pin, int BLFS_M_pin, int BLFS_L_pin){ // Check back sensor
   bool LFS_R = digitalRead(BLFS_R_pin); // bool val for back line follower sensor (right)
   bool LFS_M = digitalRead(BLFS_M_pin); // bool val for back line follower sensor (middle)
@@ -38,6 +43,9 @@ bool back_detection(int BLFS_R_pin, int BLFS_M_pin, int BLFS_L_pin){ // Check ba
   return false;
 }
 
+/*
+ * Determines if front sensor detected a line
+ */
 bool front_detection(int FLFS_R_pin, int FLFS_M_pin, int FLFS_L_pin){ // Check front sensor
   bool LFS_R = digitalRead(FLFS_R_pin); // bool val for front line follower sensor (right)
   bool LFS_M = digitalRead(FLFS_M_pin); // bool val for front line follower sensor (middle)
