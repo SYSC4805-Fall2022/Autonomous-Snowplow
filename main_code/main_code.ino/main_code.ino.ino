@@ -49,7 +49,7 @@ const int state_forward = 0;
 const int state_backup = 1;
 const int state_random_turn_right = 2;
 
-// Maximum obstacle detection response threshold
+// Maximum obstacle detection response threshold in centimeters
 const int main_object_detection_threshold = 15;
 
 // Current state
