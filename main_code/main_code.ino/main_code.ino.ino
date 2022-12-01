@@ -75,8 +75,7 @@ void WDT_Handler(void)
   state = state_watchdog;
 }
 
-/*
- * Detects for lines and front obstacles, if an obstacle or line is detected the robot enters the backup state, otherwise it continues forward
+/* Snowplow will enter backup state if a line or front obstacle is detected, otherwise it keeps moving forward
  */
 void state_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
@@ -95,7 +94,7 @@ void state_forward_handler(){
 }
 
 /*
- * Backs up the robot plow for a determinate time
+ * Backs up the snowplow for a determinate time
  */
 void state_backup_handler(){
   // turn off motors before changing direction to preserve motor life
@@ -108,7 +107,7 @@ void state_backup_handler(){
 }
 
 /*
- * Turns the robot plow right for a randomized time between 0.5 and 1 second
+ * Turns the snowplow right for a randomized time between 0.5 and 1 second
  */
 void state_random_turn_right_handler(){
   int random_turn_time = random(500, 1000); // Determine random number
