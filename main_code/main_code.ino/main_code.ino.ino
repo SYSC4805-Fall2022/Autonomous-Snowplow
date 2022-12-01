@@ -58,6 +58,10 @@ void watchdogSetup(void) {
   /*** watchdogDisable (); ***/
 }
 
+/*
+ * Watch Dog handler goes into phase 1 the first time the timer is triggered 
+ * The second time it mandates the robot plow to stop. 
+ */
 void WDT_Handler(void)
 {
   if (phase == 1){
@@ -74,6 +78,10 @@ void WDT_Handler(void)
   }
 }
 
+/*
+ * In Phase 1 (Line Following), the robot uses the line detection to follow the line
+ * In Phase 2, the car moves forward while checking for obstacles.
+ */
 void state_forward_handler(){
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
   bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold);
@@ -83,6 +91,7 @@ void state_forward_handler(){
   //Serial.println(front_object_detected || front_object_detected2);     Debugging...
 
   if(line_following){
+    //Following the line perimeter
     int direction = steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
     // Straight = 1, left = 0, right = 2, corner = 3
     switch (direction){
@@ -106,14 +115,19 @@ void state_forward_handler(){
         break;
     }
   }else if(front_line_detected || front_object_detected || front_object_detected2) {
+    //Object detected, go into back up and random turn routine
     enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
     state = state_backup;
   }else{
+    //Move forward
     forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
     enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);   
   }
 }
 
+/*
+ *  Turns the car 90degrees at the boundary edge until all of the perimeter reached
+ */
 void state_turn_right_handler(){
   right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
@@ -124,6 +138,8 @@ void state_turn_right_handler(){
   delay(100);
   forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  
+  //Counter for how many corners have been taken.
   right_turns += 1;
   if (right_turns == 5){
     line_following = false;
@@ -131,6 +147,9 @@ void state_turn_right_handler(){
   state = state_forward;
 }
 
+/*
+ * Backs up the robot plow for a determinate time
+ */
 void state_backup_handler(){
   enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   backward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
@@ -139,6 +158,9 @@ void state_backup_handler(){
   state = state_random_turn_right;
 }
 
+/*
+ * Forwards the robot plow for a determinate time
+ */
 void state_inch_forward_handler(){
   forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
@@ -147,6 +169,9 @@ void state_inch_forward_handler(){
   state = state_random_turn_right;
 }
 
+/*
+ * Turns the robot plow for a randomized time
+ */
 void state_random_turn_right_handler(){
   int random_turn_time = random(500, 1000);
   //Serial.println("Right Turn");                 Debugging...
@@ -207,6 +232,7 @@ void loop()
   WDT->WDT_CR = WDT_CR_KEY(WDT_KEY)
                 | WDT_CR_WDRSTT;
 
+  //Sends the state machine into the proper handler
   switch (state) {
     case state_forward:
       state_forward_handler();
