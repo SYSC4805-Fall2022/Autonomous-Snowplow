@@ -75,17 +75,12 @@ void WDT_Handler(void)
 }
 
 void state_forward_handler(){
-  // TODO
   bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  // bool front_line_detected = false;
-  // bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold) || object_detection_gp2(GP2_Sensor_F, main_object_detection_threshold);
-  // bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
   bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold);
   bool front_object_detected2 = object_detection_ultrasonic(ezdist2, main_object_detection_threshold);
-  // bool front_object_detected = false;
   stuck_counter = 0;
-  Serial.println("FRONT OBJECT: ");
-  Serial.println(front_object_detected || front_object_detected2);
+  //Serial.println("FRONT OBJECT: ");                                    Debugging...
+  //Serial.println(front_object_detected || front_object_detected2);     Debugging...
 
   if(line_following){
     int direction = steer_direction(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
@@ -139,49 +134,12 @@ void state_turn_right_handler(){
 void state_backup_handler(){
   enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   backward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
-      
-  for (int i = 0; i < 3; i++){
-    // TODO
-    // bool back_line_detected = back_detection(BLFS_R_pin, BLFS_M_pin, BLFS_L_pin);
-    bool back_line_detected = false;
-    bool back_object_detected = false;
-    // bool back_object_detected = object_detection_gp2(GP2_Sensor_B, short_object_detection_threshold);
-    Serial.println(back_line_detected);
-    Serial.println(back_object_detected);
-    Serial.println("");
-    if (back_line_detected || back_object_detected){
-      enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
-      // state = state_inch_forward;
-      break;
-    } else {
-      enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
-      delay(200);
-    }
-  }
+  enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  delay(600);    //Equivalent to three cycles in a for loop
   state = state_random_turn_right;
-  // TODO
-  // if (state == state_backup){
-  //   state = state_random_turn_right;
-  // }
 }
 
 void state_inch_forward_handler(){
-  // TODO
-  // bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  // bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold) || object_detection_gp2(GP2_Sensor_F, main_object_detection_threshold);
-
-  // if(!front_line_detected || !front_object_detected){
-  //   forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
-  //   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
-  //   delay(100);
-  //   enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
-  //   state = state_random_turn_right;
-  // } else if(stuck_counter == max_stuck_counter){
-  //   state = state_random_turn_right; // We are stuck, we should try to get out
-  // } else {
-  //   state = state_backup;
-  //   stuck_counter += 1;
-  // }
   forward(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
   enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
   delay(100);
@@ -190,45 +148,15 @@ void state_inch_forward_handler(){
 }
 
 void state_random_turn_right_handler(){
-  // TODO
-  // bool front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-  // bool front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold) || object_detection_gp2(GP2_Sensor_F, main_object_detection_threshold);
-  // bool turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
-  // bool turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
-  bool front_line_detected = false;
-  bool front_object_detected = false;
-  bool turn_fr_sensor = false;
-  bool turn_bl_sensor = false;
-
   int random_turn_time = random(500, 1000);
-  for (int i = 0; i < 5; i++){
-    Serial.println("Right Turn");
-    right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
-    enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  //Serial.println("Right Turn");                 Debugging...
+  right(BL_Wheel_Direction, BR_Wheel_Direction, FL_Wheel_Direction, FR_Wheel_Direction);
+  enable_on(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
 
-    delay(random_turn_time);
+  delay(random_turn_time);
 
-    enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
-
-    // TODO
-    // front_line_detected = front_detection(FLFS_R_pin, FLFS_M_pin, FLFS_L_pin);
-    // front_object_detected = object_detection_ultrasonic(ezdist1, main_object_detection_threshold) || object_detection_ultrasonic(ezdist2, main_object_detection_threshold) || object_detection_gp2(GP2_Sensor_F, main_object_detection_threshold);
-    // turn_fr_sensor = turn_check_front_right(FR_Turn_Sensor);
-    // turn_bl_sensor = turn_check_back_left(BL_Turn_Sensor);
-
-    // if (turn_fr_sensor || turn_bl_sensor){
-    //   // if (front_object_detected || front_detection) {
-    //   //   state = state_backup;
-    //   // } else {
-    //   //   state = state_forward;
-    //   // }
-    //   Serial.println("SIDE");
-    //   state = state_backup;
-    //   break;
-    // }
-    state = state_forward;
-    break;
-  }
+  enable_off(BL_Wheel_Enable, BR_Wheel_Enable, FL_Wheel_Enable, FR_Wheel_Enable);
+  state = state_forward;
 }
 
 void setup() {
